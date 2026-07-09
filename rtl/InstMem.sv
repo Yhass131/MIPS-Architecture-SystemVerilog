@@ -126,7 +126,7 @@ module InstMem(
 //        3: 32'h20090009, // 0x0C  SUB:  addi $t1,$zero,9
 //        4: 32'h03E00008, // 0x10  jr   $ra -> 0x04
 
-        // Task 1, Lab 6 - multiply routine (original ECE 445 program)
+        // Multiply routine 
         // DataMem preloaded 2,3,5,5 -> writes 6 and 25 to words 5,6
 //         0: 32'h00004020, // 0x00  add  $t0,$zero,$zero
 //         1: 32'h00004820, // 0x04  add  $t1,$zero,$zero
