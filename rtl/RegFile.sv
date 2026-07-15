@@ -23,6 +23,7 @@
 module RegFile(
     input clk,
     input en,
+    input rst,
     input write_en,
     input [4:0] read_reg1,
     input [4:0] read_reg2,
@@ -35,7 +36,9 @@ module RegFile(
     logic [31:0] RAM [0:31];
     
     always_ff @(posedge clk) begin
-        if ( en && write_en  && write_reg != 5'b00000 )
+        if(rst)
+            RAM <= '{default: 0};
+        else if ( en && write_en  && write_reg != 5'b00000 )
             RAM[write_reg] <= write_data;
     end
     

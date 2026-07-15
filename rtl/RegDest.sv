@@ -29,7 +29,7 @@ module RegDest(
     
     assign WReg =   (RegDst == 2'b00) ? Rt :        //I-type
                     (RegDst == 2'b01) ? Rd :        //R-type
-                    (RegDst == 2'b10) ? 5'B11111 :  //for jal
-                                        5'B00000;   //$zero, no write, safe default 
+                    (RegDst == 2'b10) ? 5'b11111 :  //for jal
+                                        5'b00000;   //$zero, no write, safe default 
     
 endmodule

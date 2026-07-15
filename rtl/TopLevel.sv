@@ -152,6 +152,7 @@ module TopLevel(
     RegFile RF0(
         .clk(CLK),
         .en(EN),
+        .rst(RST),
         .write_en(RegWrite),
         .read_reg1(rs),
         .read_reg2(rt),

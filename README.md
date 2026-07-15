@@ -120,7 +120,7 @@ The processor is verified with a self-checking SystemVerilog testbench (`sim/Top
 
 Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, independent of the RTL.
 
-![Datapath](docs/Tests.png)
+![Datapath](docs/PassedTests.png)
 
 ### Bugs found through testing
 

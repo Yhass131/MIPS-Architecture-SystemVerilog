@@ -49,8 +49,8 @@ module ALU(
             4'b0111: ALUout = sig_A - sig_B;
             4'b1000: ALUout = B << Shamt;
             4'b1001: ALUout = B >> Shamt;
-            4'b1010: ALUout = (A < B)? 1'b1 : 1'b0;
-            4'b1011: ALUout = (sig_A < sig_B)? 1'b1 : 1'b0;
+            4'b1010: ALUout = (sig_A < sig_B);      
+            4'b1011: ALUout = (A < B); 
             default: ALUout = '0;
         endcase
         
