@@ -204,7 +204,7 @@ Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, indepen
 
 ### Test 01
 
-![Test01](docs/Waveform_test01.png)
+![Test01](docs/Waveform_test_01.png)
 ```assembly
 0x00  addi $t0,$zero,5
 0x04  addi $t1,$t0,10
@@ -217,7 +217,7 @@ Loads a small positive immediate, adds another immediate to it, then loads a neg
 
 ### Test 06
 
-![Test06](docs/Waveform_test06.png)
+![Test06](docs/Waveform_test_06.png)
 ```assembly
 0x00  addi $t0,$zero,0
 0x04  addi $t1,$zero,3
@@ -231,7 +231,7 @@ Loops by branching backward to a lower address, using a negative immediate offse
 
 ### Test 10
 
-![Test10](docs/Waveform_test10.png)
+![Test10](docs/Waveform_test_10.png)
 ```assembly
 0x00  addi  $t0,$zero,-1
 0x04  sltiu $t1,$t0,1
@@ -244,7 +244,7 @@ Two back-to-back `Dout` values on the same operand — `0` for the unsigned comp
 
 ### Test 13
 
-![Test13](docs/Waveform_test13.png)
+![Test13](docs/Waveform_test_13.png)
 ```assembly
 0x00  jal  SUB     (0x0C)
 0x04  addi $t0,$zero,5
@@ -258,8 +258,8 @@ A minimal call/return pair — no arguments, no computation in the subroutine be
 
 ### Test 14 — Multiply routine (integration test)
 
-![Test14.1](docs/Waveform_test14_1.png)
-![Test14.2](docs/Waveform_test14_2.png)
+![Test14.1](docs/Waveform_test_14_1.png)
+![Test14.2](docs/Waveform_test_14_2.png)
 ```assembly
 0x00  add  $t0,$zero,$zero
 0x04  add  $t1,$zero,$zero
