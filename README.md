@@ -204,7 +204,7 @@ Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, indepen
 
 ### Test 01
 
-![Test01](docs/Waveform_test1.png)
+![Test01](docs/Waveform_test01.png)
 ```assembly
 0x00  addi $t0,$zero,5
 0x04  addi $t1,$t0,10
@@ -217,7 +217,7 @@ Loads a small positive immediate, adds another immediate to it, then loads a neg
 
 ### Test 06
 
-![Test06](docs/Waveform_test6.png)
+![Test06](docs/Waveform_test06.png)
 ```assembly
 0x00  addi $t0,$zero,0
 0x04  addi $t1,$zero,3
