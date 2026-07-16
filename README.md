@@ -1,9 +1,27 @@
 # MIPS-Architecture-SystemVerilog
-A single-cycle MIPS architecture written in SystemVerilog — simulated, synthesized, and implemented with Vivado on the Basys 3.
+A single-cycle MIPS architecture written in SystemVerilog — simulated and synthesized in Vivado, targeting the Basys 3 FPGA. On-board implementation in progress.
 
 ## Project Overview
 ---
-This project designs a Harvard-style, single-cycle Microprocessor without Interlocked Pipeline Stages (MIPS) computer architecture. Using SystemVerilog, part of the MIPS instruction set architecture (ISA) is reconstructed, including critical R-type, I-type, and J-type instructions. It is then simulated and verified in Vivado, and finally implemented on the Basys 3 FPGA board.
+This project designs a Harvard-style, single-cycle Microprocessor without Interlocked Pipeline Stages (MIPS) computer architecture. Using SystemVerilog, part of the MIPS instruction set architecture (ISA) is reconstructed, including critical R-type, I-type, and J-type instructions. It is simulated and verified in Vivado, with synthesis targeting the Basys 3 FPGA board; on-board implementation and hardware verification are in progress.
+
+## Repository Structure
+---
+```
+├── rtl/                  # SystemVerilog source
+├── sim/
+│   ├── TopLevel_tb.sv     # self-checking regression testbench
+│   └── programs/          # $readmemh-loadable test programs
+├── docs/                  # datapath diagram, waveform captures
+└── constraints/           # Basys 3 .xdc
+```
+
+## Getting Started
+---
+1. Open the project in Vivado.
+2. Set `sim/TopLevel_tb.sv` as the simulation top.
+3. Test programs are loaded via `$readmemh` with paths defined at the top of the testbench (see the `` `DIR `` macro) — update these to match your local clone location before running.
+4. Run Behavioral Simulation, then `run all` in the Tcl console.
 
 ## Single-Cycle MIPS Processor Datapath
 ---
@@ -50,8 +68,6 @@ The unit titled `control` takes in the top 6 bits of the current instruction —
 | 000010  | j           | 000   | —        | ALU unused |
 | 000011  | jal         | 000   | —        | ALU unused, $ra ← PC+4 |
 
-
- 
 ### R-type funct decode (Opcode = 000000, ALUOp = 010)
 
 | Funct  | Instruction | ALUCntl |
@@ -112,7 +128,7 @@ Another data storage unit, like the register file, but with very different usage
 ### Next Instruction Logic
 At the top of the diagram is a series of muxes, all used to determine the next instruction address. The PC adder simply increments the PC by 4. The jump target address logic computes where a `j`/`jal` instruction should jump to. The branch adder computes where a branch would go, while separate branch logic decides whether that branch is actually taken. The final two muxes then select which of these candidate addresses becomes the next PC value.
 
-The jump target address logic includes a mux that chooses between the calculated address or an address from a register, for the jr case.
+The jump target address logic includes a mux that chooses between the calculated address or an address from a register, for the `jr` case.
 
 ## Verification
 
@@ -120,7 +136,15 @@ The processor is verified with a self-checking SystemVerilog testbench (`sim/Top
 
 Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, independent of the RTL.
 
-![Datapath](docs/PassedTests.png)
+```
+[PASTE YOUR ACTUAL FINAL CONSOLE OUTPUT HERE — e.g.]
+[PASS] test01_addi          $t0=5   $t1=15  $t2=ffffffff
+[PASS] test02_rtype          $t2=10  $t3=4
+...
+14/14 TESTS PASSED
+```
+
+![Test results](docs/PassedTests.png)
 
 ### Test 01
 
@@ -133,7 +157,9 @@ Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, indepen
 ```
 Loads a small positive immediate, adds another immediate to it, then loads a negative immediate and checks that it correctly extends to a full 32-bit `0xFFFFFFFF` rather than something like `0x0000FFFF`. Validates the `sign_ext` module in isolation — the very first piece of the datapath most other tests silently depend on.
 
-Dout=5 writing to $t0, then Dout=15 writing to $t1, then Dout=0xFFFFFFFF writing to $t2 — the third value being the one that actually proves sign extension rather than zero-padding.
+`Dout=5` writing to `$t0`, then `Dout=15` writing to `$t1`, then `Dout=0xFFFFFFFF` writing to `$t2` — the third value being the one that actually proves sign extension rather than zero-padding.
+
+### Test 06
 
 ![Test06](docs/Waveform_test6.png)
 ```assembly
@@ -146,6 +172,66 @@ Dout=5 writing to $t0, then Dout=15 writing to $t1, then Dout=0xFFFFFFFF writing
 Loops by branching backward to a lower address, using a negative immediate offset. Validates sign extension of the branch offset, the shift-left-2, the branch adder, and `branch_logic`'s taken/not-taken decision — together the most fragile chain in a MIPS datapath.
 
 `PCout` oscillating between `0x08` and `0x0C` three times, with `$t0` incrementing `0 → 1 → 2 → 3` in lockstep on each pass, then falling through to the halt once `$t0` reaches `$t1`.
+
+### Test 10
+
+![Test10](docs/Waveform_test10.png)
+```assembly
+0x00  addi  $t0,$zero,-1
+0x04  sltiu $t1,$t0,1
+0x08  slti  $t2,$t0,1
+0x0C  j 0x0C   (halt)
+```
+Loads `-1` (`0xFFFFFFFF`) and compares it against `1` two ways — once unsigned, once signed — to confirm the ALU's comparison logic actually distinguishes the two rather than treating them identically. This is the test that caught a real bug: the `slt`/`sltu` encodings were originally swapped in `ALUcntl`.
+
+Two back-to-back `Dout` values on the same operand — `0` for the unsigned comparison (`0xFFFFFFFF` is not less than `1` when read as a huge positive number) and `1` for the signed comparison (`-1` is less than `1`) — landing in `$t1` and `$t2` respectively.
+
+### Test 13
+
+![Test13](docs/Waveform_test13.png)
+```assembly
+0x00  jal  SUB     (0x0C)
+0x04  addi $t0,$zero,5
+0x08  j 0x08   (halt)
+0x0C  SUB: addi $t1,$zero,9
+0x10  jr   $ra
+```
+A minimal call/return pair — no arguments, no computation in the subroutine beyond a marker instruction, isolating the jump-and-link mechanism from everything else. Validates `RegDst=10` (hardcoding the destination to `$ra`), `MemtoReg=10` (writing back `PC+4` instead of an ALU result), and `jmpSrcMux` selecting a register value over a computed target for `jr`.
+
+`PCout` executing out of address order — `0x00 → 0x0C → 0x10 → 0x04 → 0x08` — with `Dout=0x04` latching into `$ra` at the `jal`, `$t1=9` set inside the subroutine, and `$t0=5` only executing after the return, proving `jr` actually redirected the PC back rather than falling through.
+
+### Test 14 — Multiply routine (integration test)
+
+![Test14.1](docs/Waveform_test14_1.png)
+![Test14.2](docs/Waveform_test14_2.png)
+```assembly
+0x00  add  $t0,$zero,$zero
+0x04  add  $t1,$zero,$zero
+0x08  addi $t2,$zero,2
+0x0C  addi $t3,$zero,20
+0x10  lw   $a0,0($t0)
+0x14  lw   $a1,4($t0)
+0x18  jal  MULT        (0x34)
+0x1C  sw   $v0,0($t3)
+0x20  addi $t0,$t0,8
+0x24  addi $t3,$t3,4
+0x28  addi $t1,$t1,1
+0x2C  bne  $t1,$t2,L1
+0x30  j    DONE
+0x34  MULT: add $s0,$zero,$zero
+0x38  sub  $v0,$v0,$v0
+0x3C  L2:  add $v0,$v0,$a0
+0x40       addi $s0,$s0,1
+0x44       bne  $s0,$a1,L2
+0x48       jr   $ra
+0x4C  DONE: nop
+```
+Computes 2×3 and 5×5 by repeated addition, using a subroutine reached with `jal`/`jr`. Exercises nearly the entire instruction set in one program — `lw`, `sw`, `add`, `sub`, `addi`, `bne`, `j`, `jal`, `jr` — and is the closest thing in the suite to a real program rather than a unit test.
+
+`PCout` jumping non-sequentially from `0x18` to `0x34` on the `jal` (skipping over the `sw`), looping through `L2` three times while `$v0` accumulates `0 → 2 → 4 → 6`, then `jr` returning execution to `0x1C` — behind where the `jal` was originally issued — where the accumulated result is stored to `mem[5]`.
+
+The same subroutine runs a second time with different operands (5×5), looping five times instead of three — demonstrating the loop bound (`$a1`) is read from data rather than fixed in the instruction stream.
+
 ### Bugs found through testing
 
 Verification surfaced several bugs that weren't visible from code review alone:
@@ -158,10 +244,10 @@ Verification surfaced several bugs that weren't visible from code review alone:
 
 ## Known Limitations
 
+- **Both `InstMem` and `DataMem` are addressed with `Addr[6:2]`**, a 5-bit slice reaching only the first 32 of their 64 declared words. This caps total program size at 32 instructions (128 bytes) and data memory at 32 words, even though both arrays are declared 64 words deep. The longest test program (the multiply routine, 20 words) fits comfortably under this limit, but it's a real constraint on future test programs, not just an unused-memory curiosity.
 - **`andi`/`ori` sign-extend their immediates** rather than zero-extending them, since both ALU-source paths share a single `sign_ext` module. Deviates from the MIPS spec, where logical immediates are zero-extended.
 - **`add`/`addu` and `sub`/`subu` are functionally identical.** In the ISA, the only difference is that `add`/`sub` trap on signed overflow while `addu`/`subu` don't. This ALU exposes `Overflow` as a flag rather than trapping, so the distinction currently has no effect.
 - **`Overflow` and `Carryout` are computed unconditionally** from the ALU's operands, regardless of which operation is selected — e.g. `Carryout` reports the carry of `A+B` even during a logical `AND`. Only meaningful to read during add/subtract operations.
-- **`DataMem` is addressed with `Addr[6:2]`**, reaching only the first 32 of its 64 declared words. `InstMem` uses `Addr[7:2]` and reaches the full 64.
 - **`jr`'s funct code isn't decoded** by `ALUcntl` and falls through to a default ALU result. Harmless in practice, since `jr`'s ALU output is unused and its destination register decodes to `$zero`, but worth noting as an intentional gap rather than an oversight.
 - **`RegFile` is fully reset on `RST`**, clearing all 32 registers. This is correct and necessary for consistent simulation, but prevents Vivado from inferring distributed RAM for the register file — it synthesizes as ~1024 flip-flops instead.
 - **No arithmetic right shift (`sra`).** Only logical shifts (`sll`, `srl`) are implemented.
