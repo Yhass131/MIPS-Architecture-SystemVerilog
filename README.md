@@ -300,6 +300,19 @@ Verification surfaced several bugs that weren't visible from code review alone:
 - `RegFile` read `$zero` directly from an uninitialized array element rather than hardwiring it, producing X on any instruction that read register 0 before it was written.
 - A typo in a port connection (`sigExtImm` vs. the declared `SignExtImm`) left the ALU's immediate input floating, corrupting every ALU result.
 
+### Hardware Demo
+
+
+https://github.com/user-attachments/assets/589cc0ba-b9ec-4422-8144-ec4c965eab35
+
+
+A single continuous run on the Basys 3: the multiply routine executing to
+completion via manual instruction-stepping, `RST` clearing the processor
+mid-program and restarting cleanly (twice, confirming the fix for the
+clock/reset race described above), and the `Dout` digit-select button
+toggling between the upper and lower 16 bits of a result on the 7-segment
+display.
+
 ## Known Limitations
 
 - **Both `InstMem` and `DataMem` are addressed with `Addr[6:2]`**, a 5-bit slice reaching only the first 32 of their 64 declared words. This caps total program size at 32 instructions (128 bytes) and data memory at 32 words, even though both arrays are declared 64 words deep. The longest test program (the multiply routine, 20 words) fits comfortably under this limit, but it's a real constraint on future test programs, not just an unused-memory curiosity.
