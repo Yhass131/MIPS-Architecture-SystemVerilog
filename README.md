@@ -122,6 +122,30 @@ Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, indepen
 
 ![Datapath](docs/PassedTests.png)
 
+### Test 01
+
+![Test01](docs/Waveform_test1.png)
+```assembly
+0x00  addi $t0,$zero,5
+0x04  addi $t1,$t0,10
+0x08  addi $t2,$zero,-1
+0x0C  j 0x0C   (halt)
+```
+Loads a small positive immediate, adds another immediate to it, then loads a negative immediate and checks that it correctly extends to a full 32-bit `0xFFFFFFFF` rather than something like `0x0000FFFF`. Validates the `sign_ext` module in isolation — the very first piece of the datapath most other tests silently depend on.
+
+Dout=5 writing to $t0, then Dout=15 writing to $t1, then Dout=0xFFFFFFFF writing to $t2 — the third value being the one that actually proves sign extension rather than zero-padding.
+
+![Test06](docs/Waveform_test6.png)
+```assembly
+0x00  addi $t0,$zero,0
+0x04  addi $t1,$zero,3
+0x08  loop: addi $t0,$t0,1
+0x0C  bne  $t0,$t1,loop
+0x10  j 0x10   (halt)
+```
+Loops by branching backward to a lower address, using a negative immediate offset. Validates sign extension of the branch offset, the shift-left-2, the branch adder, and `branch_logic`'s taken/not-taken decision — together the most fragile chain in a MIPS datapath.
+
+`PCout` oscillating between `0x08` and `0x0C` three times, with `$t0` incrementing `0 → 1 → 2 → 3` in lockstep on each pass, then falling through to the halt once `$t0` reaches `$t1`.
 ### Bugs found through testing
 
 Verification surfaced several bugs that weren't visible from code review alone:
