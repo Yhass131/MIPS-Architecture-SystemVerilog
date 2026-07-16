@@ -137,11 +137,67 @@ The processor is verified with a self-checking SystemVerilog testbench (`sim/Top
 Test programs live in `sim/programs/` as `$readmemh`-loadable hex files, independent of the RTL.
 
 ```
-[PASTE YOUR ACTUAL FINAL CONSOLE OUTPUT HERE — e.g.]
-[PASS] test01_addi          $t0=5   $t1=15  $t2=ffffffff
-[PASS] test02_rtype          $t2=10  $t3=4
-...
-14/14 TESTS PASSED
+=== Test 1: addi - sign extension ===
+[PASS]               test01 $t0 = 00000005
+[PASS]               test01 $t1 = 0000000f
+[PASS]               test01 $t2 = ffffffff
+
+=== Test 2: R-type add/sub ===
+[PASS]               test02 $t2 = 0000000a
+[PASS]               test02 $t3 = 00000004
+
+=== Test 3: lw ===
+[PASS]               test03 $t0 = 00000002
+[PASS]               test03 $t1 = 00000003
+[PASS]               test03 $t2 = 00000005
+
+=== Test 4: sw ===
+[PASS]               test04 $t1 = 00001234
+[PASS]            test04 mem[8] = 00001234
+
+=== Test 5: beq (taken, forward) ===
+[PASS]               test05 $t2 = 00000000
+[PASS]               test05 $t3 = 00000001
+
+=== Test 6: bne (backward loop) ===
+[PASS]               test06 $t0 = 00000003
+
+=== Test 7: andi ===
+[PASS]               test07 $t1 = 0000000f
+
+=== Test 8: ori ===
+[PASS]               test08 $t1 = 000000ff
+
+=== Test 9: slti ===
+[PASS]               test09 $t1 = 00000001
+[PASS]               test09 $t2 = 00000000
+
+=== Test 10: sltiu vs slti ===
+[PASS]       test10 $t1 (sltiu) = 00000000
+[PASS]        test10 $t2 (slti) = 00000001
+
+=== Test 11: addiu ===
+[PASS]               test11 $t0 = ffffffff
+[PASS]               test11 $t1 = 00000005
+
+=== Test 12: j ===
+[PASS]               test12 $t0 = 00000001
+[PASS]               test12 $t1 = 00000007
+
+=== Test 13: jal / jr ===
+[PASS]               test13 $ra = 00000004
+[PASS]               test13 $t1 = 00000009
+[PASS]               test13 $t0 = 00000005
+
+=== Multiply routine ===
+[PASS]           mem[5] = 2 * 3 = 00000006
+[PASS]           mem[6] = 5 * 5 = 00000019
+[PASS]                      $ra = 0000001c
+
+=====================================
+  29 passed, 0 failed
+  ALL 14 TESTS PASSED
+=====================================
 ```
 
 ![Test results](docs/PassedTests.png)
