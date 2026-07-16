@@ -303,7 +303,7 @@ Verification surfaced several bugs that weren't visible from code review alone:
 ### Hardware Demo
 
 
-https://github.com/user-attachments/assets/589cc0ba-b9ec-4422-8144-ec4c965eab35
+https://github.com/user-attachments/assets/e7af661f-fc39-4cd8-b485-72b1568309cc
 
 
 A single continuous run on the Basys 3: the multiply routine executing to
