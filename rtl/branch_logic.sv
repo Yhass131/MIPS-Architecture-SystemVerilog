@@ -1,21 +1,37 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
+// Company: Personal Project
 // Engineer: Yunus Hassen
 // 
-// Create Date: 07/07/2026 07:34:22 PM
-// Design Name: 
+// Create Date: 07/08/2026 08:19:15 PM
+// Design Name: MIPS
 // Module Name: branch_logic
-// Project Name: MIPS in Verilog
-// Target Devices: 
-// Tool Versions: 
-// Description: Uses input 'Branch' to either output 'Zero' or it's inverse through 'BranchOut'.
-// 
-// Dependencies: N/A
-// 
-// Revision: 1
-// Revision 1 
+// Project Name: MIPS_inVerilog
+// Target Devices: xc7a35tcpg236-1
+// Tool Versions: Vivado 2025.1
+// Description:
+// Branch-decision logic for beq and bne. Based on the Branch select signal
+// from the control unit, outputs Zero directly (beq: branch when operands
+// are equal) or ~Zero (bne: branch when operands are not equal). Zero is
+// computed upstream by the ALU, which has already performed rs - rt for
+// any instruction reaching this module.
+//
+// Inputs:
+//   Branch                     - Selection on what, if at all, to branch
+//   Zero                       - ALU zero flag from rs - rt; high means
+//                                 the compared operands are equal
+// Outputs:
+//   BranchOut                  - Signal to branch or not
+//
+// Dependencies: 
+// None
+//
 // Additional Comments:
-// 
+// The default case is important, without it, any Branch value other
+// than 2'b01/2'b10 leaves BranchOut undriven in simulation (X), which
+// propagates into the PC-select mux and corrupts every subsequent
+// instruction fetch. Confirmed via regression testing - see README
+// "Bugs found through testing." 
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -28,9 +44,9 @@ module branch_logic(
     always_comb begin
     
         case(Branch)
-            2'b01: BranchOut = Zero;
-            2'b10: BranchOut = ~Zero;
-            default: BranchOut = '0;
+            2'b01: BranchOut = Zero;    //beq
+            2'b10: BranchOut = ~Zero;   //bne
+            default: BranchOut = '0;    //default, not a branch command
         endcase
     
     end

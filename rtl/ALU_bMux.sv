@@ -1,30 +1,36 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Personal Project
+// Engineer: Yunus Hassen
 // 
-// Create Date: 07/08/2026 05:42:34 PM
-// Design Name: 
+// Create Date: 07/08/2026 08:19:15 PM
+// Design Name: MIPS
 // Module Name: ALU_bMux
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
+// Project Name: MIPS_inVerilog
+// Target Devices: xc7a35tcpg236-1
+// Tool Versions: Vivado 2025.1
+// Description:
+// A 2 input, 1 output MUX specifically for ALU's B operand
+//
+// Inputs:
+//   ReadData2, sigExtImm       - 32-bit options for Mux
+//   ALUSrc                     - 1-bit Select  
+// Outputs:
+//   B                          - 32-bit Mux Output
+//
 // Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
+// None
+//
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
 
 module ALU_bMux(
-    input ALUSrc,
-    input [31:0] ReadData2,
-    input [31:0] sigExtImm,
-    output [31:0] B
+    input logic ALUSrc,
+    input logic [31:0] ReadData2,
+    input logic [31:0] sigExtImm,
+    output logic [31:0] B
     );
     
     assign B = ALUSrc ? sigExtImm : ReadData2;

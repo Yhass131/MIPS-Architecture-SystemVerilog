@@ -1,22 +1,44 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
+// Company: Personal Project
+// Engineer: Yunus Hassen
+//
 // Create Date: 07/08/2026 05:49:28 PM
-// Design Name: 
+// Design Name: MIPS
 // Module Name: TopLevel
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
+// Project Name: MIPS_inVerilog
+// Target Devices: xc7a35tcpg236-1
+// Tool Versions: Vivado 2025.1
+// Description:
+// Top-level single-cycle MIPS datapath. Wires together instruction fetch
+// (pc/pcadder/InstMem), instruction decode (control/ALUcntl/RegDest), the
+// register file, sign extension, the ALU and its operand mux, data memory,
+// jump decode (jmpLogic/JmpTargetAddr/jmpSrcMux), branch decode
+// (branch_adder/branch_logic), and the PC-select mux chain (branch vs.
+// sequential, then jump vs. that result). EN acts as a single-step enable
+// shared by the PC and register file, so a clock edge with EN low is a
+// no-op; RST is a synchronous reset for the PC and register file.
+//
+// Inputs:
+//   CLK        - 1-bit  - clock
+//   EN         - 1-bit  - single-step enable (PC and register file)
+//   RST        - 1-bit  - synchronous reset (PC and register file)
+// Outputs:
+//   Dout       - 32-bit - write-back data selected for the current instruction
+//   PCout      - 5-bit  - current PC, as a word index (CurrAddr[6:2])
+//   Zero       - 1-bit  - ALU zero flag (rs - rt == 0)
+//   Overflow   - 1-bit  - ALU signed add/sub overflow flag
+//   Carryout   - 1-bit  - ALU carry-out flag
+//
+// Dependencies:
+// pc, InstMem, pcadder, JmpTargetAddr, jmpLogic, control, RegDest, RegFile,
+// sign_ext, branch_adder, branch_logic, ALU_bMux, ALUcntl, ALU, DataMem,
+// memToRegMux, jmpSrcMux, mux2to1_32
+//
 // Additional Comments:
-// 
+// Instruction and data memory are both 64 words, addressed by Addr[6:2];
+// programs and data must fit within that range. See TopLevel_tb.sv for
+// the regression program set exercising each instruction class.
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -170,7 +192,7 @@ module TopLevel(
     );
     
     /*
-        ___ Forth Column ___
+        ___ Fourth Column ___
     */
     
     logic [31:0] BrchTargetAddr;

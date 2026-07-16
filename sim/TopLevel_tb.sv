@@ -1,22 +1,37 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
+// Company: Personal Project
+// Engineer: Yunus Hassen
+//
 // Create Date: 07/09/2026 01:27:09 PM
-// Design Name: 
+// Design Name: MIPS
 // Module Name: TopLevel_tb
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
+// Project Name: MIPS_inVerilog
+// Target Devices: xc7a35tcpg236-1
+// Tool Versions: Vivado 2025.1
+// Description:
+// Self-checking regression testbench for TopLevel. Drives a free-running
+// 100MHz clock, loads one instruction/data hex program at a time via
+// run_program (using $readmemh through hierarchical references into
+// InstMem/DataMem), pulses reset, lets the core free-run for 200 cycles,
+// and checks final register/memory contents against expected values.
+// Covers addi sign extension, R-type add/sub, lw, sw, beq (forward), bne
+// (backward loop), andi, ori, slti, sltiu vs slti, addiu, j, jal/jr, and
+// an integration multiply routine.
+//
+// Inputs:
+// None (testbench; no ports)
+// Outputs:
+// None (testbench; no ports)
+//
+// Dependencies:
+// TopLevel
+//
 // Additional Comments:
-// 
+// Hierarchical references (Top.instMem0.mem, Top.RF0.RAM, Top.DataMem0.mem)
+// reach directly into instantiated modules to load programs and check
+// results, bypassing the normal port interface - this is testbench-only
+// and relies on TopLevel's internal instance names staying stable.
 //////////////////////////////////////////////////////////////////////////////////
 `timescale 1ns / 1ps
 
@@ -57,7 +72,7 @@ module TopLevel_tb(
     // loads a new program, resets, and lets it run
     task automatic run_program(string instr_hex, string data_hex = "");
         rst = 1;
-        Top.instMem0.mem = '{default: '0};     // ← add this
+        Top.instMem0.mem = '{default: '0};     
         $readmemh(instr_hex, Top.instMem0.mem);
         if (data_hex != "")
             $readmemh(data_hex, Top.DataMem0.mem);

@@ -258,8 +258,8 @@ A minimal call/return pair — no arguments, no computation in the subroutine be
 
 ### Test 14 — Multiply routine (integration test)
 
-![Test14.1](docs/Waveform_test_14_1.png)
-![Test14.2](docs/Waveform_test_14_2.png)
+![Test14.1](docs/Waveform_test_14_01.png)
+![Test14.2](docs/Waveform_test_14_02.png)
 ```assembly
 0x00  add  $t0,$zero,$zero
 0x04  add  $t1,$zero,$zero
@@ -287,6 +287,8 @@ Computes 2×3 and 5×5 by repeated addition, using a subroutine reached with `ja
 `PCout` jumping non-sequentially from `0x18` to `0x34` on the `jal` (skipping over the `sw`), looping through `L2` three times while `$v0` accumulates `0 → 2 → 4 → 6`, then `jr` returning execution to `0x1C` — behind where the `jal` was originally issued — where the accumulated result is stored to `mem[5]`.
 
 The same subroutine runs a second time with different operands (5×5), looping five times instead of three — demonstrating the loop bound (`$a1`) is read from data rather than fixed in the instruction stream.
+
+`PCout` traces the full non-sequential control flow — the jump to `MULT` on `jal`, the loop repeating three times inside `L2`, and `jr` returning execution behind the original call site. The resulting values (`mem[5]=6`, `mem[6]=25`) are confirmed in the console output above rather than read directly off this waveform.
 
 ### Bugs found through testing
 
